@@ -3,12 +3,31 @@ import { parseUnits } from "@ethersproject/units";
 import { notification } from "antd";
 import Notify from "bnc-notify";
 import { BLOCKNATIVE_DAPPID } from "../constants";
+import axios from "axios";
+const { BigNumber, ethers } = require("ethers");
+
+let generalProvider = new ethers.providers.StaticJsonRpcProvider("https://polygon-rpc.com/");
 
 // this should probably just be renamed to "notifier"
 // it is basically just a wrapper around BlockNative's wonderful Notify.js
 // https://docs.blocknative.com/notify
 
-export default function Transactor(provider, gasPrice, etherscan) {
+export default function Transactor(provider, gasPrice,etherscan, address) { 
+  const getSlowGasPrice = async () => {
+    let gasPriceData = await axios.get("https://gpoly.blockscan.com/gasapi.ashx?apikey=key&method=pendingpooltxgweidata");
+
+    let standardgaspricegwei = gasPriceData?.data?.result?.standardgaspricegwei;
+
+    standardgaspricegwei = standardgaspricegwei - 1;
+
+    return ethers.utils.parseUnits(standardgaspricegwei.toString(), 9);
+  }
+
+  const getNonce = async () => {
+    return await generalProvider.getTransactionCount(address);
+    
+  }
+
   if (typeof provider !== "undefined") {
     // eslint-disable-next-line consistent-return
     return async tx => {
@@ -48,8 +67,14 @@ export default function Transactor(provider, gasPrice, etherscan) {
           //if (!tx.gasLimit) {
           //  tx.gasLimit = hexlify(120000);
           //}
+          
+          tx.gasPrice = await getSlowGasPrice();
+          tx.nonce = await getNonce();
           console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
+
+          localStorage.setItem("pendingTxParams", JSON.stringify(tx));
+          localStorage.setItem("pendingTxHash", result.hash);
         }
         console.log("RESULT:", result);
         // console.log("Notify", notify);
