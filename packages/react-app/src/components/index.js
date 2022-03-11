@@ -13,6 +13,7 @@ export { default as Provider } from "./Provider";
 export { default as QRPunkBlockie } from "./QRPunkBlockie";
 export { default as Ramp } from "./Ramp";
 export { default as Swap } from "./Swap";
+export { default as SpeedUpTx } from "./SpeedUpTx";
 export { default as ThemeSwitch } from "./ThemeSwitch";
 export { default as Timeline } from "./Timeline";
 export { default as TokenBalance } from "./TokenBalance";
