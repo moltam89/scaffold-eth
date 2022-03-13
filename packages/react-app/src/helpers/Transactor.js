@@ -8,11 +8,11 @@ import { BLOCKNATIVE_DAPPID } from "../constants";
 // it is basically just a wrapper around BlockNative's wonderful Notify.js
 // https://docs.blocknative.com/notify
 
-export default function Transactor(provider, gasPrice, etherscan) {
+export default function Transactor(provider, gasPrice, etherscan, userSigner) {
   if (typeof provider !== "undefined") {
     // eslint-disable-next-line consistent-return
     return async tx => {
-      const signer = provider.getSigner();
+      const signer = userSigner ? userSigner : provider.getSigner();
       const network = await provider.getNetwork();
       console.log("network", network);
       const options = {

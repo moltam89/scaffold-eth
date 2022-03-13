@@ -5,6 +5,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import { Alert, Button, Col, Row, Select, Input, Modal, notification } from "antd";
 import "antd/dist/antd.css";
 import { useUserAddress } from "eth-hooks";
+import { useUserProviderAndSigner } from "eth-hooks-v2";
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import Web3Modal from "web3modal";
 import "./App.css";
@@ -204,9 +205,12 @@ function App(props) {
   const selectedChainId = userProvider && userProvider._network && userProvider._network.chainId;
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
-
+   
+  const userProviderAndSigner = useUserProviderAndSigner(injectedProvider, localProvider, true);
+  const userSigner = userProviderAndSigner?.signer;
+ 
   // The transactor wraps transactions and provides notificiations
-  const tx = Transactor(userProvider, gasPrice);
+  const tx = Transactor(userProvider, gasPrice, undefined, injectedProvider ? undefined : userSigner);
 
   // Faucet Tx can be used to send funds from the faucet
   const faucetTx = Transactor(localProvider, gasPrice);
