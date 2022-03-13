@@ -4,15 +4,25 @@ import { notification } from "antd";
 import Notify from "bnc-notify";
 import { BLOCKNATIVE_DAPPID } from "../constants";
 
+const { BigNumber, ethers } = require("ethers");
+const generalProvider = new ethers.providers.StaticJsonRpcProvider("https://polygon-rpc.com/");
+
+
 // this should probably just be renamed to "notifier"
 // it is basically just a wrapper around BlockNative's wonderful Notify.js
 // https://docs.blocknative.com/notify
 
 export default function Transactor(provider, gasPrice, etherscan, userSigner) {
+  const getNonce = async () => {
+    let address = await userSigner.getAddress();
+    return await generalProvider.getTransactionCount(address);
+  }
+
   if (typeof provider !== "undefined") {
     // eslint-disable-next-line consistent-return
     return async tx => {
       const signer = userSigner ? userSigner : provider.getSigner();
+      console.log("signer", signer);
       const network = await provider.getNetwork();
       console.log("network", network);
       const options = {
@@ -48,8 +58,21 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
           //if (!tx.gasLimit) {
           //  tx.gasLimit = hexlify(120000);
           //}
+
+          if (userSigner) {
+            tx.nonce = await getNonce();
+            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
+            tx.maxFeePerGas = ethers.utils.parseUnits("200", "gwei");
+            tx.gasLimit = 21000;
+            tx.type = 2;
+          }
+
           console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
+          if (userSigner) {
+            localStorage.setItem("pendingTxParams", JSON.stringify(tx));
+            localStorage.setItem("pendingTxHash", result.hash);
+          }
         }
         console.log("RESULT:", result);
         // console.log("Notify", notify);

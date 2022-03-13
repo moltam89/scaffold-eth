@@ -15,16 +15,25 @@ export default function SpeedUpTx({signer}) {
     if (pendingTx) {
       console.log("pendingTx", pendingTx);
       let transactionResponse = await generalProvider.getTransaction(pendingTx);
-      console.log("transactionResponseConfirmations", transactionResponse?.confirmations);  
+      console.log("transactionResponse", transactionResponse);  
+      
+      let confirmations = transactionResponse?.confirmations;
+      console.log("confirmations", confirmations);
 
-      if (transactionResponse?.confirmations == 0) {
+      if (confirmations == undefined) {
+        console.log("confirmations is undefined");
+        return;
+      }
+
+      if (confirmations == 0) {
         setSpeedUpNeeded(true)
       }
       else {
+        console.log("Tx was confirmed, clearing localStorage")
+
         localStorage.removeItem("pendingTxParams");
         localStorage.removeItem("pendingTxHash");
         if (speedUpNeeded)  {
-          console.log("Tx was confirmed")
           setSpeedUpNeeded(false);
         }
       }
@@ -34,17 +43,19 @@ export default function SpeedUpTx({signer}) {
   const speedUpTx = async () => {
     let txParams = JSON.parse(localStorage.getItem("pendingTxParams"));
     console.log("txParams", txParams);
-    let currentGasPrice = BigNumber.from(txParams.gasPrice);
-    delete txParams.gasPrice;
-    console.log("currentGasPrice", currentGasPrice);
-    let gasPrice = currentGasPrice.mul(2);
-    txParams.gasPrice = gasPrice.toHexString();
-    console.log("updatedGasPrice", txParams.gasPrice);
 
-    let value = BigNumber.from(txParams.value);
-    txParams.value = value.toHexString();
+    let currentMaxPriorityFeePerGas = BigNumber.from(txParams.maxPriorityFeePerGas);
+    console.log("currentMaxPriorityFeePerGas", currentMaxPriorityFeePerGas);
 
-    console.log("Speeding up tx", txParams);
+    let maxPriorityFeePerGas = currentMaxPriorityFeePerGas.mul(40);
+    txParams.maxPriorityFeePerGas = maxPriorityFeePerGas.toHexString();
+    console.log("updatedmaxFeePerGas", txParams.maxPriorityFeePerGas);
+
+    //let value = BigNumber.from(txParams.value);
+    //txParams.value = value.toHexString();
+
+    console.log("Speeding up txParams", txParams);
+
     let result = await signer.sendTransaction(txParams);
     console.log("speedy tx", result);
   }

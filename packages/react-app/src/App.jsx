@@ -20,6 +20,7 @@ import {
   Header,
   QRPunkBlockie,
   Ramp,
+  SpeedUpTx,
   Wallet,
 } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
@@ -745,6 +746,10 @@ function App(props) {
             />,
           ]}
         />
+      </div>
+
+      <div>
+        <SpeedUpTx signer={userSigner}/>
       </div>
 
       {/* ✏️ Edit the header and change the title to your project name */}
