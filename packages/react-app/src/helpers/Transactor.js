@@ -61,11 +61,26 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
 
           if (userSigner) {
             tx.nonce = await getNonce();
-            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
+            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("40", "gwei");
             tx.maxFeePerGas = ethers.utils.parseUnits("200", "gwei");
             tx.gasLimit = 21000;
             tx.type = 2;
           }
+
+          let populatedTx = await userSigner.populateTransaction(tx);
+          console.log("populatedTx", populatedTx);
+
+          let signedTx = await userSigner.signTransaction(populatedTx);
+          console.log("signedTx", signedTx);
+
+          let signedTx2 = await userSigner.signTransaction(tx);
+          console.log("signedTx2", signedTx2);
+
+          let hash = ethers.utils.keccak256(signedTx);
+          console.log("hash", hash);
+
+          let hash2 = ethers.utils.keccak256(signedTx2);
+          console.log("hash2", hash2);
 
           console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
