@@ -17,4 +17,5 @@ export { default as SpeedUpTx } from "./SpeedUpTx";
 export { default as ThemeSwitch } from "./ThemeSwitch";
 export { default as Timeline } from "./Timeline";
 export { default as TokenBalance } from "./TokenBalance";
+export { default as TransactionResponseDisplay } from "./TransactionResponseDisplay";
 export { default as Wallet } from "./Wallet";
