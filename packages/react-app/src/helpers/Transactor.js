@@ -3,6 +3,9 @@ import { parseUnits } from "@ethersproject/units";
 import { notification } from "antd";
 import Notify from "bnc-notify";
 import { BLOCKNATIVE_DAPPID } from "../constants";
+import { TransactionManager } from "./TransactionManager";
+
+
 
 const { BigNumber, ethers } = require("ethers");
 const generalProvider = new ethers.providers.StaticJsonRpcProvider("https://polygon-rpc.com/");
@@ -13,6 +16,8 @@ const generalProvider = new ethers.providers.StaticJsonRpcProvider("https://poly
 // https://docs.blocknative.com/notify
 
 export default function Transactor(provider, gasPrice, etherscan, userSigner) {
+  const transactionManager = new TransactionManager(generalProvider, userSigner);
+
   const getNonce = async () => {
     let address = await userSigner.getAddress();
     return await generalProvider.getTransactionCount(address);
@@ -60,9 +65,9 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
           //}
 
           if (userSigner) {
-            tx.nonce = await getNonce();
-            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("40", "gwei");
-            tx.maxFeePerGas = ethers.utils.parseUnits("200", "gwei");
+            //tx.nonce = 138;
+            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
+            tx.maxFeePerGas = ethers.utils.parseUnits("50", "gwei");
             tx.gasLimit = 21000;
             tx.type = 2;
           }
@@ -84,16 +89,18 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
 
           console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
-          if (userSigner) {
+
+          transactionManager.storeTransactionResponse(result);
+          /*if (userSigner) {
             localStorage.setItem("pendingTxParams", JSON.stringify(tx));
             localStorage.setItem("pendingTxHash", result.hash);
-          }
+          }*/
         }
         console.log("RESULT:", result);
         // console.log("Notify", notify);
 
         // if it is a valid Notify.js network, use that, if not, just send a default notification
-        if ([1, 3, 4, 5, 42, 100].indexOf(network.chainId) >= 0) {
+        if ([1, 3, 4, 5, 42, 100, 137].indexOf(network.chainId) >= 0) {
           const { emitter } = notify.hash(result.hash);
           emitter.on("all", transaction => {
             return {
