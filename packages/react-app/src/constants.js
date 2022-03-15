@@ -343,7 +343,7 @@ export const NETWORKS = {
     color: "#2bbdf7",
     price: "uniswap:0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
     chainId: 137,
-    rpcUrl: "https://polygon-rpc.com",
+    rpcUrl: "https://polygon-mainnet.g.alchemy.com/v2/mr6F4rbVud_UtuyXkvTtHi7H7XzN76P6",
     faucet: "https://faucet.matic.network/",
     blockExplorer: "https://explorer-mainnet.maticvigil.com//",
   },
