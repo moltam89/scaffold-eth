@@ -23,6 +23,14 @@ export class TransactionManager {
 	}
 	setTransactionResponsesJSON(transactionResponsesJSON) {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(transactionResponsesJSON));
+
+		// Listen for changes with localStorage on the same window
+		// https://jsfiddle.net/cynx/q5skr0bo/
+		var evt = document.createEvent('StorageEvent'); 
+
+		evt.initStorageEvent('storage', false, false, STORAGE_KEY, 'oldValue', 'newValue', null, window.localStorage); 
+		    
+		window.dispatchEvent(evt);
 	}
 
 	getTransactionResponse(nonce) {
@@ -38,10 +46,10 @@ export class TransactionManager {
 
 		this.setTransactionResponsesJSON(transactionResponsesJSON);
 	}
-	removeTransactionResponse(nonce) {
+	removeTransactionResponse(transactionResponse) {
 		let transactionResponsesJSON = this.getTransactionResponsesJSON();
 
-		delete transactionResponsesJSON[nonce];
+		delete transactionResponsesJSON[transactionResponse.nonce];
 
 		this.setTransactionResponsesJSON(transactionResponsesJSON);
 	}
@@ -65,13 +73,35 @@ export class TransactionManager {
 		return transactionResponsesArray;
 	}
 
-	async getConfirmations(hash) {
-		let transactionResponse = await this.provider.getTransaction(hash);
+	async getConfirmations(transactionResponse) {
+		let newTransactionResponse = await this.provider.getTransaction(transactionResponse.hash);
 
-		return transactionResponse.confirmations;
+		if (!newTransactionResponse) {
+			// I'm not sure what is this case, but it happened
+			let nonce = await this.provider.getTransactionCount(await this.signer.getAddress());
+
+			console.log(nonce, transactionResponse.nonce);
+
+			if (transactionResponse.nonce <= (nonce -1)) {
+				// transaction with the same nonce was probably already confirmed
+				console.log("remove", transactionResponse);
+				this.removeTransactionResponse(transactionResponse);
+				return 100;
+			}
+
+			return 0;
+		}
+
+		return newTransactionResponse.confirmations;
 	}	
+
+	async isTransactionPending(transactionResponse) {
+		let confirmations = await this.getConfirmations(transactionResponse);
+
+		return !(confirmations > 0);
+	}
 	
-	async speedUpTransaction(nonce, speedUpPercentage) {
+	speedUpTransaction(nonce, speedUpPercentage) {
 		if (!speedUpPercentage) {
 			speedUpPercentage = 10;
 		}
@@ -94,10 +124,22 @@ export class TransactionManager {
 		// EIP1559
 		else {
 			transactionParams.maxPriorityFeePerGas = this.getUpdatedGasPrice(transactionParams.maxPriorityFeePerGas, speedUpPercentage);
+			
+			// This shouldn't be necessary, but without this polygon fails way too many times with "replacement transaction underpriced"
 			transactionParams.maxFeePerGas = this.getUpdatedGasPrice(transactionParams.maxFeePerGas, speedUpPercentage);
 		}
 
-		console.log("new transactionParams", transactionParams);
+		console.log("transactionParams", transactionParams);
+
+		this.signer.sendTransaction(transactionParams)
+			.then(newTransactionResponse => {
+				console.log("newTransactionResponse", newTransactionResponse);
+				this.storeTransactionResponse(newTransactionResponse);
+			})
+			.catch(error => {
+				// probably transaction underpriced
+				console.log("err", error)
+			});
 	}
 
 	getUpdatedGasPrice(gasPrice, speedUpPercentage) {

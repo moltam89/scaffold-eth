@@ -749,7 +749,7 @@ function App(props) {
       </div>
 
       <div>
-        <SpeedUpTx signer={userSigner}/>
+        <SpeedUpTx provider={localProvider} signer={userSigner}/>
       </div>
 
       {/* ✏️ Edit the header and change the title to your project name */}
