@@ -6,24 +6,37 @@ import { TransactionManager } from "../helpers/TransactionManager";
 const { BigNumber, ethers } = require("ethers");
 
 export default function TransactionResponseDisplay({transactionResponse, transactionManager}) {
-  const [confirmations, setConfirmations] = useState();
+  const [confirmations, setConfirmations] = useState(transactionResponse.confirmations);
   const [loading, setLoading] = useState(false);
 
-  useEffect(async () => {
-    setConfirmations(await transactionManager.getConfirmations(transactionResponse));
+  const updateConfirmations = async () => {
+    let confirmations = await transactionManager.getConfirmations(transactionResponse);
+
+    if (confirmations >= 20) {
+      transactionManager.removeTransactionResponse(transactionResponse);
+    }
+
+    setConfirmations(confirmations);
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateConfirmations()
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  console.log("loading", loading);
 
   return  (
     <div>  
 
-      -nonce:{transactionResponse.nonce} 
+      -nonce:{transactionResponse.nonce}
+      -confirmations:{confirmations} 
       -hash:{transactionResponse.hash} 
       {(confirmations == 0) &&          
          <Button
             onClick={ () => {
-              transactionManager.speedUpTransaction(transactionResponse.nonce, 50);
+              transactionManager.speedUpTransaction(transactionResponse.nonce, 20);
             }}
             size="large"
             shape="round"
