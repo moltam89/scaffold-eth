@@ -65,9 +65,9 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
           //}
 
           if (userSigner) {
-            //tx.nonce = 138;
-            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
-            tx.maxFeePerGas = ethers.utils.parseUnits("50", "gwei");
+            tx.nonce = await getNonce();
+            tx.maxPriorityFeePerGas = ethers.utils.parseUnits("33", "gwei");
+            tx.maxFeePerGas = ethers.utils.parseUnits("80", "gwei");
             tx.gasLimit = 21000;
             tx.type = 2;
           }
