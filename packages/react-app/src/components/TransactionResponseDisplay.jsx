@@ -30,9 +30,9 @@ export default function TransactionResponseDisplay({transactionResponse, transac
   return  (
     <div>  
 
-      -nonce:{transactionResponse.nonce}
-      -confirmations:{confirmations} 
-      -hash:{transactionResponse.hash} 
+      <b> -nonce: </b>{transactionResponse.nonce}
+      <b> -confirmations: </b>{confirmations} 
+      <b> -hash: </b>{transactionResponse.hash} 
       {(confirmations == 0) &&          
          <Button
             onClick={ () => {
@@ -46,8 +46,8 @@ export default function TransactionResponseDisplay({transactionResponse, transac
           </Button>
         }
        
-       -maxPriorityFeePerGas: {ethers.utils.formatUnits(transactionResponse.maxPriorityFeePerGas, "gwei")}
-       -maxFeePerGas: {ethers.utils.formatUnits(transactionResponse.maxFeePerGas, "gwei")}
+       <b> -maxPriorityFeePerGas: </b> {ethers.utils.formatUnits(transactionResponse.maxPriorityFeePerGas, "gwei")}
+       <b> -maxFeePerGas: </b> {ethers.utils.formatUnits(transactionResponse.maxFeePerGas, "gwei")}
     </div>
   );
 }
