@@ -64,7 +64,10 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
           //  tx.gasLimit = hexlify(120000);
           //}
 
+
           if (userSigner) {
+            // Testing on polygon, currently 33 gwei should be slow enough, so I can click on Speed Up button
+
             tx.nonce = await getNonce();
             tx.maxPriorityFeePerGas = ethers.utils.parseUnits("33", "gwei");
             tx.maxFeePerGas = ethers.utils.parseUnits("80", "gwei");
@@ -72,29 +75,9 @@ export default function Transactor(provider, gasPrice, etherscan, userSigner) {
             tx.type = 2;
           }
 
-          let populatedTx = await userSigner.populateTransaction(tx);
-          console.log("populatedTx", populatedTx);
-
-          let signedTx = await userSigner.signTransaction(populatedTx);
-          console.log("signedTx", signedTx);
-
-          let signedTx2 = await userSigner.signTransaction(tx);
-          console.log("signedTx2", signedTx2);
-
-          let hash = ethers.utils.keccak256(signedTx);
-          console.log("hash", hash);
-
-          let hash2 = ethers.utils.keccak256(signedTx2);
-          console.log("hash2", hash2);
-
-          console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
 
           transactionManager.storeTransactionResponse(result);
-          /*if (userSigner) {
-            localStorage.setItem("pendingTxParams", JSON.stringify(tx));
-            localStorage.setItem("pendingTxHash", result.hash);
-          }*/
         }
         console.log("RESULT:", result);
         // console.log("Notify", notify);
