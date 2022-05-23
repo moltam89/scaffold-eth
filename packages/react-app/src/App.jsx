@@ -421,6 +421,23 @@ function App(props) {
   const [ connected, setConnected ] = useState()
 
   const [ wallectConnectConnector, setWallectConnectConnector ] = useState()
+
+  if (wallectConnectConnector && wallectConnectConnector.connected && address) {
+    const connectedAddress = wallectConnectConnector.accounts[0];
+
+    // Use Checksummed addresses
+    if (ethers.utils.getAddress(connectedAddress) != ethers.utils.getAddress(address)) {
+      console.log("Updating wallet connect session with the new address");
+      console.log("Connected address", ethers.utils.getAddress(connectedAddress));
+      console.log("New address ", ethers.utils.getAddress(address));
+
+      wallectConnectConnector.updateSession({
+        accounts: [address],
+      });
+    }
+  }
+
+
   //store the connector session in local storage so sessions persist through page loads ( thanks Pedro <3 )
   const [ wallectConnectConnectorSession, setWallectConnectConnectorSession ] = useLocalStorage("wallectConnectConnectorSession")
 
@@ -645,6 +662,10 @@ function App(props) {
     provider.on("disconnect",()=>{
       console.log("LOGOUT!")
       logoutOfWeb3Modal()
+    })
+    provider.on("accountsChanged", (accounts) => {
+      console.log("accountsChanged", accounts);
+      setInjectedProvider(new Web3Provider(provider));  
     })
     setInjectedProvider(new Web3Provider(provider));
   }, [setInjectedProvider]);
